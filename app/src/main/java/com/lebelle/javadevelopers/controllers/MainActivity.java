@@ -3,6 +3,8 @@ package com.lebelle.javadevelopers.controllers;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,6 +15,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.DividerItemDecoration;
@@ -49,6 +52,12 @@ public class MainActivity extends AppCompatActivity{
 
     //navigation drawer
     private DrawerLayout mDrawerLayout;
+    //app toolbar
+    private Toolbar toolbar;
+    //drawer toogle
+    private ActionBarDrawerToggle drawerToggle;
+
+    public JavaDevelopersResponse javaDevelopersResponse;
 
     private RecyclerView recyclerView;
     TextView Disconnected;
@@ -57,6 +66,11 @@ public class MainActivity extends AppCompatActivity{
     ProgressDialog pd;
     LinearLayout load_more;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private SwitchCompat toggle;
+
+    //app theme preference
+    private static final String PREFS_NAME = "prefs";
+    private static final String PREF_DARK_THEME = "dark_theme";
 
     //pagination constants
     // The total number of items in the data set after the last load
@@ -103,7 +117,7 @@ public class MainActivity extends AppCompatActivity{
         });
 
         //toolbar layout
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         final ActionBar ab = getSupportActionBar();
@@ -112,11 +126,38 @@ public class MainActivity extends AppCompatActivity{
 
         //navigation layout
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerToggle = setUpDrawerToggle();
+        mDrawerLayout.addDrawerListener(drawerToggle);
+
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         if (navigationView != null) {
             setupDrawerContent(navigationView);
         }
 
+        Menu menu = navigationView.getMenu();
+        MenuItem menuItem = menu.findItem(R.id.night_switch);
+        View actionView = MenuItemCompat.getActionView(menuItem);
+
+        toggle = (SwitchCompat) actionView.findViewById(R.id.drawer_switch);
+        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            @Override
+            public void onCheckedChanged(CompoundButton view, boolean isChecked) {
+                //toggleTheme
+                if (isChecked){
+                    //change theme
+                    setNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                    editor.putBoolean(PREF_DARK_THEME,isChecked);
+                    editor.apply();
+                    Intent intent = getIntent();
+                    finish();
+                    startActivity(intent);
+                }else {
+                    setNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                }
+            }
+        });
     }
 
     private void initViews(){
@@ -190,11 +231,11 @@ public class MainActivity extends AppCompatActivity{
             call.enqueue(new Callback<JavaDevelopersResponse>() {
                 @Override
                 public void onResponse(Call<JavaDevelopersResponse> call, Response<JavaDevelopersResponse> response) {
-                    List<JavaDevelopers> javaDevelopers = response.body().getJavaDevelopers();
+                    javaDevelopersResponse = response.body();
                     swipeRefreshLayout.setRefreshing(false);
                     pd.hide();
                     load_more.setVisibility(View.GONE);
-                    myJavaDevelopers.addAll(javaDevelopers);
+                    myJavaDevelopers.addAll(javaDevelopersResponse.getJavaDevelopers());
                     //Make a check of the page number. If it is the first page create an instance of the adapter
                     //and set it before notifying it for changes else just notify the already created adapter for changes
                     if (current_page == 1){
@@ -234,9 +275,9 @@ public class MainActivity extends AppCompatActivity{
             call.enqueue(new Callback<JavaDevelopersResponse>() {
                 @Override
                 public void onResponse(Call<JavaDevelopersResponse> call, Response<JavaDevelopersResponse> response) {
-                    List<JavaDevelopers> javaDevelopers = response.body().getJavaDevelopers();
+                    javaDevelopersResponse = response.body();
                     myJavaDevelopers.clear();
-                    myJavaDevelopers.addAll(javaDevelopers);
+                    myJavaDevelopers.addAll(javaDevelopersResponse.getJavaDevelopers());
                     mAdapter = new JavaDevelopersAdapter(getApplicationContext(), myJavaDevelopers);
                     recyclerView.setAdapter(mAdapter);
                     mAdapter.notifyDataSetChanged();
@@ -256,8 +297,27 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    private ActionBarDrawerToggle setUpDrawerToggle(){
+        return new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, R.string.drawer_open, R.string.app_name2);
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState){
+        super.onPostCreate(savedInstanceState);
+        drawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig){
+        super.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (drawerToggle.onOptionsItemSelected(item)){
+            return true;
+        }
         switch (item.getItemId()) {
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
@@ -310,20 +370,7 @@ public class MainActivity extends AppCompatActivity{
                                 mDrawerLayout.closeDrawers();
                                 break;
                             case R.id.night_switch:
-                                SwitchCompat toggle = (SwitchCompat) findViewById(R.id.drawer_switch);
-                                //toggle.setChecked(useDarkTheme);
-                                toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                                    @Override
-                                    public void onCheckedChanged(CompoundButton view, boolean isChecked) {
-                                        //toggleTheme(isChecked);
-                                        if (isChecked){
-                                            //change theme
-                                            setNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                                        }else {
-                                            setNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                                        }
-                                    }
-                                });
+                                toggle.setChecked(!toggle.isChecked());
                                 mDrawerLayout.closeDrawers();
                                 break;
                             case android.R.id.home:

@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Java Developers</string>
     <string name="app_name2">Quad</string>
+    <string name="drawer_open">Navigation</string>
     <string name="name">Full Name</string>
     <string name="job">Java Developer</string>
     <string name="username">\u0040 Username</string>

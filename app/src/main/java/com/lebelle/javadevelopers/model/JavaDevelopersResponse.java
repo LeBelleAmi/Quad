@@ -12,7 +12,7 @@ import java.util.List;
 public class JavaDevelopersResponse {
     @SerializedName("items")
     @Expose
-    private List<JavaDevelopers> javaDevelopers;
+    private List<JavaDevelopers> javaDevelopers = null;
 
     public List<JavaDevelopers> getJavaDevelopers(){
         return javaDevelopers;
