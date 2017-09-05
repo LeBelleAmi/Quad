@@ -66,6 +66,8 @@ public class MainActivity extends AppCompatActivity{
     ProgressDialog pd;
     LinearLayout load_more;
     private SwipeRefreshLayout swipeRefreshLayout;
+
+    //toggle switch for night mode
     private SwitchCompat toggle;
 
     //app theme preference
@@ -134,10 +136,12 @@ public class MainActivity extends AppCompatActivity{
             setupDrawerContent(navigationView);
         }
 
+        //set switch access in navigationView
         Menu menu = navigationView.getMenu();
         MenuItem menuItem = menu.findItem(R.id.night_switch);
         View actionView = MenuItemCompat.getActionView(menuItem);
 
+        //set switch to change theme settings
         toggle = (SwitchCompat) actionView.findViewById(R.id.drawer_switch);
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
