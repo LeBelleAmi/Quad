@@ -3,7 +3,6 @@ package com.lebelle.javadevelopers.controllers;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
@@ -29,7 +28,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -143,25 +141,27 @@ public class MainActivity extends AppCompatActivity{
 
         //set switch to change theme settings
         toggle = (SwitchCompat) actionView.findViewById(R.id.drawer_switch);
-        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            @Override
-            public void onCheckedChanged(CompoundButton view, boolean isChecked) {
+        //toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+          //  SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            //SharedPreferences.Editor editor = sharedPreferences.edit();
+            //@Override
+            //public void onCheckedChanged(CompoundButton view, boolean isChecked) {
                 //toggleTheme
-                if (isChecked){
+              //  if (isChecked){
                     //change theme
-                    setNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                    editor.putBoolean(PREF_DARK_THEME,isChecked);
-                    editor.apply();
-                    Intent intent = getIntent();
-                    finish();
-                    startActivity(intent);
-                }else {
-                    setNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                }
-            }
-        });
+                //    setNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                  //  editor.putBoolean(PREF_DARK_THEME,true);
+                   // editor.apply();
+                   // Intent intent = getIntent();
+                   // finish();
+                    //startActivity(intent);
+                //}else {
+                  //  setNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                    //editor.putBoolean(PREF_DARK_THEME,false);
+                    //editor.apply();
+                //}
+            //}
+        //});
     }
 
     private void initViews(){
@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity{
                         loading = true;
                     } else {
                         Snackbar snackbar =
-                        Snackbar.make(findViewById(R.id.main_activity), "No Java Developers to disp" +
+                        Snackbar.make(findViewById(R.id.main_activity), "No more Java Developers to disp" +
                                 "lay, Probably end of the List!", Snackbar.LENGTH_INDEFINITE).
                                 setAction("Dismiss", new View.OnClickListener(){
                                     @Override
@@ -235,20 +235,24 @@ public class MainActivity extends AppCompatActivity{
             call.enqueue(new Callback<JavaDevelopersResponse>() {
                 @Override
                 public void onResponse(Call<JavaDevelopersResponse> call, Response<JavaDevelopersResponse> response) {
-                    javaDevelopersResponse = response.body();
-                    swipeRefreshLayout.setRefreshing(false);
-                    pd.hide();
-                    load_more.setVisibility(View.GONE);
-                    myJavaDevelopers.addAll(javaDevelopersResponse.getJavaDevelopers());
-                    //Make a check of the page number. If it is the first page create an instance of the adapter
-                    //and set it before notifying it for changes else just notify the already created adapter for changes
-                    if (current_page == 1){
-                        mAdapter = new JavaDevelopersAdapter(getApplicationContext(), myJavaDevelopers);
-                        recyclerView.smoothScrollToPosition(0);
-                        recyclerView.setAdapter(mAdapter);
-                        mAdapter.notifyDataSetChanged();
-                    }else {
-                        mAdapter.notifyDataSetChanged();
+                    if (response != null) {
+                        javaDevelopersResponse = response.body();
+                        swipeRefreshLayout.setRefreshing(false);
+                        pd.hide();
+                        load_more.setVisibility(View.GONE);
+                        if (javaDevelopersResponse != null) {
+                            myJavaDevelopers.addAll(javaDevelopersResponse.getJavaDevelopers());
+                        }
+                        //Make a check of the page number. If it is the first page create an instance of the adapter
+                        //and set it before notifying it for changes else just notify the already created adapter for changes
+                        if (current_page == 1) {
+                            mAdapter = new JavaDevelopersAdapter(getApplicationContext(), myJavaDevelopers);
+                            recyclerView.smoothScrollToPosition(0);
+                            recyclerView.setAdapter(mAdapter);
+                            mAdapter.notifyDataSetChanged();
+                        } else {
+                            mAdapter.notifyDataSetChanged();
+                        }
                     }
                 }
 
@@ -279,15 +283,19 @@ public class MainActivity extends AppCompatActivity{
             call.enqueue(new Callback<JavaDevelopersResponse>() {
                 @Override
                 public void onResponse(Call<JavaDevelopersResponse> call, Response<JavaDevelopersResponse> response) {
-                    javaDevelopersResponse = response.body();
-                    myJavaDevelopers.clear();
-                    myJavaDevelopers.addAll(javaDevelopersResponse.getJavaDevelopers());
-                    mAdapter = new JavaDevelopersAdapter(getApplicationContext(), myJavaDevelopers);
-                    recyclerView.setAdapter(mAdapter);
-                    mAdapter.notifyDataSetChanged();
-                    EmptyState.setVisibility(View.GONE);
-                    if (swipeRefreshLayout.isRefreshing()) {
-                        swipeRefreshLayout.setRefreshing(false);
+                    if (response != null) {
+                        javaDevelopersResponse = response.body();
+                        myJavaDevelopers.clear();
+                        if (javaDevelopersResponse != null) {
+                            myJavaDevelopers.addAll(javaDevelopersResponse.getJavaDevelopers());
+                        }
+                        mAdapter = new JavaDevelopersAdapter(getApplicationContext(), myJavaDevelopers);
+                        recyclerView.setAdapter(mAdapter);
+                        mAdapter.notifyDataSetChanged();
+                        EmptyState.setVisibility(View.GONE);
+                        if (swipeRefreshLayout.isRefreshing()) {
+                            swipeRefreshLayout.setRefreshing(false);
+                        }
                     }
                 }
 
@@ -373,11 +381,7 @@ public class MainActivity extends AppCompatActivity{
                                 d.show();
                                 mDrawerLayout.closeDrawers();
                                 break;
-                            case R.id.night_switch:
-                                toggle.setChecked(!toggle.isChecked());
-                                mDrawerLayout.closeDrawers();
-                                break;
-                            case android.R.id.home:
+                             case android.R.id.home:
                                 mDrawerLayout.closeDrawer(GravityCompat.START);
                                 break;
                         }

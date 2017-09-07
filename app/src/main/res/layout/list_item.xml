@@ -9,7 +9,7 @@
     <LinearLayout
         android:id="@+id/text_container"
         android:layout_width="match_parent"
-        android:layout_height="75dp"
+        android:layout_height="80dp"
         android:background="@drawable/list_item_selector"
         android:orientation="horizontal"
         android:paddingLeft="8dp"
@@ -27,6 +27,8 @@
                 android:layout_height="@dimen/avatar_bounds"
                 android:layout_marginEnd="@dimen/avatar_margin"
                 android:layout_marginStart="@dimen/avatar_margin"
+                android:layout_marginTop="@dimen/avatar_marginTop"
+                android:layout_marginBottom="@dimen/avatar_marginTop"
                 android:padding="@dimen/avatar_padding"
                 android:src="@color/avatar_background" />
 

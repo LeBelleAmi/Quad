@@ -18,6 +18,7 @@
     <dimen name="avatar_bounds">60dp</dimen>
     <dimen name="avatar_padding">4dp</dimen>
     <dimen name="avatar_margin">8dp</dimen>
+    <dimen name="avatar_marginTop">4dp</dimen>
 
     <dimen name="large_avatar_size">140dp</dimen> <!-- 2 * actionBarSize - 2 * avatar_padding -->
     <dimen name="large_avatar_marginTop">80dp</dimen><!-- spacing_large - avatar_padding -->
