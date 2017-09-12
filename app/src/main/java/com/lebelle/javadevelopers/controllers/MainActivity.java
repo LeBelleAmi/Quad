@@ -192,22 +192,22 @@ public class MainActivity extends AppCompatActivity{
 
                 //If loading is true as you scroll down, and you haven't gotten to the end
                 //of the list, assign loading to false.
-                if (loading && (totalItemCount > previousTotal)) {
-                    loading = false;
-                    previousTotal = totalItemCount;
-                }
+                //if (loading && (totalItemCount > previousTotal)) {
+                  //  loading = false;
+                    //previousTotal = totalItemCount;
+                //}
 
                 //if loading is false and you are at the end of the list increment current_page
                 //by 1 and then check if you are not at the last page using the value in current_page
                 //if it is true, then pass the current page number to the Url and fetch the data from the
                 //internet and then update the info displayed in the RV if successful.
-                if (!loading && (totalItemCount - visibleItemCount)
+                if (loading && (totalItemCount - visibleItemCount)
                         <= (firstVisibleItem + visibleThreshold)) {
                     current_page ++;
                     if (current_page < 8) {
                         load_more.setVisibility(View.VISIBLE);//show the progress bar for reloading.
                         loadDATA();
-                        loading = true;
+                        loading = false;
                     } else {
                         Snackbar snackbar =
                         Snackbar.make(findViewById(R.id.main_activity), "No more Java Developers to disp" +
@@ -242,6 +242,7 @@ public class MainActivity extends AppCompatActivity{
                         load_more.setVisibility(View.GONE);
                         if (javaDevelopersResponse != null) {
                             myJavaDevelopers.addAll(javaDevelopersResponse.getJavaDevelopers());
+                            loading = true;
                         }
                         //Make a check of the page number. If it is the first page create an instance of the adapter
                         //and set it before notifying it for changes else just notify the already created adapter for changes
