@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-    //swipe refresh recyclerview
+    //swipe refresh to reload data in recyclerview
     private void reloadData() {
         try {
             Client client = new Client();
